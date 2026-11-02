@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Principal - Control Escolar</title>
+    <!-- CDN de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos de Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- BARRA LATERAL (SIDEBAR DINÁMICA) -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="p-2 bg-emerald-600 rounded-lg">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wide">Hope4Guatemala</h1>
+            </div>
+
+   <nav class="space-y-2">
+    <!-- El Dashboard lo ven ambos -->
+    <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 bg-emerald-600 rounded-lg text-white font-medium shadow-sm transition">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <!-- EXCLUSIVO PARA ADMINISTRADOR: Alumnos y Fichas -->
+    {% if rol == 'admin' %}
+    <a href="/alumnos" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span>Alumnos y Fichas</span>
+    </a>
+    {% endif %}
+
+    <!-- Calificaciones lo ven ambos (Admin y Maestro) -->
+    <a href="/calificaciones" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+        <span>Calificaciones (Notas)</span>
+    </a>
+    
+    <!-- Sección exclusiva de Administración -->
+    {% if rol == 'admin' %}
+    <div class="pt-4 mt-4 border-t border-slate-800 space-y-2">
+        <p class="px-4 text-xs font-semibold uppercase text-slate-500 tracking-wider">Administración</p>
+        <a href="/usuarios" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+            <i data-lucide="user-cog" class="w-5 h-5 text-emerald-400"></i>
+            <span>Gestión de Docentes</span>
+        </a>
+    </div>
+    {% endif %}
+</nav>
+        </div>
+
+        <!-- USUARIO LOGUEADO Y SALIDA -->
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-emerald-600/30 flex items-center justify-center font-bold text-emerald-400 uppercase">
+                    {{ session.get('username')[0] }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold capitalize">{{ session.get('username') }}</p>
+                    <p class="text-xs text-emerald-400 uppercase font-bold tracking-wider">{{ rol }}</p>
+                </div>
+            </div>
+            <a href="/logout" title="Cerrar Sesión" class="p-2 text-slate-400 hover:text-rose-400 transition">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+
+        <!-- CABECERA -->
+        <header class="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Panel Principal</h2>
+                <p class="text-sm text-gray-500">
+                    {% if rol == 'admin' %}
+                        Gestión Administrativa General (Preprimaria y Primaria)
+                    {% else %}
+                        Panel Docente - Visualizando alumnos de: <span class="font-semibold text-emerald-600">{{ grado_asignado }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- BOTÓN DE INSCRIBIR (SOLO ADMIN) -->
+            {% if rol == 'admin' %}
+            <button onclick="document.getElementById('modalEstudiante').classList.remove('hidden')" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm transition">
+                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                <span>Inscribir Alumno</span>
+            </button>
+            {% endif %}
+        </header>
+
+        <div class="p-8 space-y-8">
+
+            <!-- TARJETAS DE MÉTRICAS -->
+            <div class="grid grid-cols-1 {% if rol == 'admin' %}md:grid-cols-3{% else %}md:grid-cols-1{% endif %} gap-6">
+                
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Total de Estudiantes</p>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mt-1">{{ estudiantes|length }}</h3>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                {% if rol == 'admin' %}
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Pagos al Día</p>
+                        <h3 class="text-3xl font-extrabold text-emerald-600 mt-1">
+                            {{ estudiantes|selectattr('estado_pago', 'equalto', 'Al día')|list|length }}
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Alumnos con Moras</p>
+                        <h3 class="text-3xl font-extrabold text-rose-600 mt-1">
+                            {{ estudiantes|selectattr('estado_pago', 'equalto', 'Pendiente')|list|length }}
+                        </h3>
+                    </div>
+                    <div class="p-3 bg-rose-50 text-rose-600 rounded-lg">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- TABLA DE ALUMNOS -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900">Listado de Alumnos</h3>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-xs uppercase font-semibold border-b border-gray-200">
+                                <th class="py-3 px-6">ID</th>
+                                <th class="py-3 px-6">Estudiante</th>
+                                <th class="py-3 px-6">Nivel / Grado</th>
+                                
+                                {% if rol == 'admin' %}
+                                <th class="py-3 px-6">Estado de Pago</th>
+                                {% endif %}
+                                
+                                <th class="py-3 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 text-sm">
+                            {% for e in estudiantes %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6 font-medium text-gray-500">#{{ e.id }}</td>
+                                <td class="py-4 px-6 font-bold text-gray-900">{{ e.nombre }}</td>
+                                <td class="py-4 px-6 text-gray-600 font-medium">{{ e.grado }}</td>
+                                
+                                {% if rol == 'admin' %}
+                                <td class="py-4 px-6">
+                                    {% if e.estado_pago == 'Al día' %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Al día
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Pendiente
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+
+                                <td class="py-4 px-6 text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <a href="/estudiante/{{ e.id }}/notas" title="Ver Ficha y Notas" class="px-3 py-1.5 hover:bg-emerald-50 text-emerald-700 rounded-lg transition flex items-center gap-1 text-xs font-medium border border-emerald-200 bg-emerald-50/40">
+                                           <i data-lucide="book-open" class="w-4 h-4"></i> Notas
+                                        </a>
+                                        
+                                        {% if rol == 'admin' %}
+                                        <!-- Enlace correcto de pagos dentro del bucle del alumno -->
+                                        <a href="/estudiante/{{ e.id }}/pagos" title="Gestionar Pago" class="px-3 py-1.5 hover:bg-emerald-50 text-emerald-700 rounded-lg transition flex items-center gap-1 text-xs font-medium border border-emerald-200 bg-emerald-50/40">
+                                            <i data-lucide="dollar-sign" class="w-4 h-4"></i> Pago
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="{% if rol == 'admin' %}5{% else %}4{% endif %}" class="text-center py-8 text-gray-400">
+                                    No hay estudiantes registrados en este grado.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+ <!-- MODAL PARA INSCRIBIR ESTUDIANTE -->
+<div id="modalEstudiante" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-6">
+        <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+            <h3 class="text-lg font-bold text-gray-900">Inscribir Alumno (Preprimaria y Primaria)</h3>
+            <button onclick="document.getElementById('modalEstudiante').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <form action="/agregar" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo del Alumno</label>
+                <input type="text" name="nombre" required placeholder="Ej. Sofía Valentina Gómez" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Grado</label>
+                <select name="grado" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                    <optgroup label="Nivel Preprimaria">
+                        <option value="Pre-kinder">Pre-kinder</option>
+                        <option value="Kínder">Kínder</option>
+                        <option value="Preparatoria">Preparatoria</option>
+                    </optgroup>
+                    <optgroup label="Nivel Primaria">
+                        <option value="1ro Primaria">1ro Primaria</option>
+                        <option value="2do Primaria">2do Primaria</option>
+                        <option value="3ro Primaria">3ro Primaria</option>
+                        <option value="4to Primaria">4to Primaria</option>
+                        <option value="5to Primaria">5to Primaria</option>
+                        <option value="6to Primaria">6to Primaria</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" onclick="document.getElementById('modalEstudiante').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Cancelar</button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">Inscribir Alumno</button>
+            </div>
+        </form>
+    </div>
+</div>
+    <!-- Inicializar iconos -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

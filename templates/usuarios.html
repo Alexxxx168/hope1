@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Docentes - Control Escolar</title>
+    <!-- CDN de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos de Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="p-2 bg-emerald-600 rounded-lg">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wide">Colegio App</h1>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/usuarios" class="flex items-center gap-3 px-4 py-3 bg-emerald-600 rounded-lg text-white font-medium shadow-sm transition">
+                    <i data-lucide="user-cog" class="w-5 h-5"></i>
+                    <span>Gestión de Docentes</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- USUARIO Y SALIDA -->
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-emerald-600/30 flex items-center justify-center font-bold text-emerald-400 uppercase">
+                    {{ session.get('username')[0] }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold capitalize">{{ session.get('username') }}</p>
+                    <p class="text-xs text-emerald-400 uppercase font-bold tracking-wider">{{ session.get('rol') }}</p>
+                </div>
+            </div>
+            <a href="/logout" title="Cerrar Sesión" class="p-2 text-slate-400 hover:text-rose-400 transition">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+
+        <!-- CABECERA -->
+        <header class="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Gestión de Docentes y Usuarios</h2>
+                <p class="text-sm text-gray-500">Crea, asigna grados o revoca accesos al personal del centro educativo</p>
+            </div>
+            
+            <button onclick="document.getElementById('modalUsuario').classList.remove('hidden')" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm transition">
+                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                <span>Nuevo Usuario / Docente</span>
+            </button>
+        </header>
+
+        <div class="p-8 space-y-8">
+
+            <!-- TABLA DE USUARIOS -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900">Personal Registrado en el Sistema</h3>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-xs uppercase font-semibold border-b border-gray-200">
+                                <th class="py-3 px-6">ID</th>
+                                <th class="py-3 px-6">Usuario</th>
+                                <th class="py-3 px-6">Rol en el Sistema</th>
+                                <th class="py-3 px-6">Grado Asignado</th>
+                                <th class="py-3 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 text-sm">
+                            {% for u in usuarios %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6 font-medium text-gray-500">#{{ u.id }}</td>
+                                <td class="py-4 px-6 font-bold text-gray-900 flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold uppercase">
+                                        {{ u.username[0] }}
+                                    </div>
+                                    {{ u.username }}
+                                </td>
+                                <td class="py-4 px-6">
+                                    {% if u.rol == 'admin' %}
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
+                                        Administrador
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                        Maestro(a)
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-6 text-gray-600 font-medium">
+                                    {{ u.grado_asignado if u.grado_asignado else 'N/A (Acceso Global)' }}
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    {% if u.id != session.get('user_id') %}
+                                    <form action="/eliminar_usuario/{{ u.id }}" method="POST" onsubmit="return confirm('¿Estás seguro de revocar el acceso a este usuario? Ya no podrá ingresar al sistema.');" class="inline">
+                                        <button type="submit" title="Revocar Acceso" class="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition border border-rose-200 bg-rose-50/40">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-xs text-gray-400 italic">Usuario Actual</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-gray-400">
+                                    No hay usuarios registrados.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL PARA NUEVO USUARIO -->
+    <div id="modalUsuario" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">Registrar Nuevo Personal</h3>
+                <button onclick="document.getElementById('modalUsuario').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form action="/agregar_usuario" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Usuario</label>
+                    <input type="text" name="username" required placeholder="Ej. profe_carlos" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña Temporal</label>
+                    <input type="password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rol en la Institución</label>
+                    <select name="rol" id="selectRol" onchange="toggleGradoInput()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        <option value="maestro">Maestro / Docente</option>
+                        <option value="admin">Administrador General</option>
+                    </select>
+                </div>
+
+                <div id="campoGrado">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Grado Asignado</label>
+                    <select name="grado_asignado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                        <option value="Preprimaria">Preprimaria</option>
+                        <option value="1ro Primaria">1ro Primaria</option>
+                        <option value="2do Primaria">2do Primaria</option>
+                        <option value="3ro Primaria">3ro Primaria</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="document.getElementById('modalUsuario').classList.add('hidden')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition">Crear Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT PARA CONTROLAR EL FORMULARIO -->
+    <script>
+        lucide.createIcons();
+
+        function toggleGradoInput() {
+            const rol = document.getElementById('selectRol').value;
+            const campoGrado = document.getElementById('campoGrado');
+            if (rol === 'admin') {
+                campoGrado.classList.add('hidden');
+            } else {
+                campoGrado.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

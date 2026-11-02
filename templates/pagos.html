@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Financiero - {{ estudiante.nombre }}</title>
+    <!-- CDN de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos de Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- BARRA LATERAL -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="p-2 bg-emerald-600 rounded-lg">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wide">Colegio App</h1>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span>Dashboard</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-emerald-600/30 flex items-center justify-center font-bold text-emerald-400 uppercase">
+                    {{ session.get('username')[0] }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold capitalize">{{ session.get('username') }}</p>
+                    <p class="text-xs text-emerald-400 uppercase font-bold tracking-wider">{{ session.get('rol') }}</p>
+                </div>
+            </div>
+            <a href="/logout" title="Cerrar Sesión" class="p-2 text-slate-400 hover:text-rose-400 transition">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+
+        <!-- CABECERA -->
+        <header class="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Control de Pagos y Moras</h2>
+                <p class="text-sm text-gray-500">
+                    Estudiante: <span class="font-semibold text-emerald-600">{{ estudiante.nombre }}</span> | Grado: {{ estudiante.grado }}
+                </p>
+            </div>
+            
+            <a href="/dashboard" class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-4 py-2.5 rounded-lg shadow-sm transition text-sm">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Volver al Panel</span>
+            </a>
+        </header>
+
+        <div class="p-8 max-w-5xl mx-auto w-full space-y-8">
+
+            <!-- ACCIÓN PARA AGREGAR NUEVO PAGO -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Registrar Nuevo Pago o Cuota</h3>
+                
+                <form action="/estudiante/{{ estudiante.id }}/pagos" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Concepto</label>
+                        <input type="text" name="concepto" required placeholder="Ej. Mensualidad Marzo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Monto ($ o Q)</label>
+                        <input type="number" step="0.01" name="monto" required placeholder="0.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Estado</label>
+                        <select name="estado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white text-sm">
+                            <option value="Pagado">Pagado</option>
+                            <option value="Pendiente">Pendiente (Mora)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fecha</label>
+                        <input type="date" name="fecha" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
+                    </div>
+
+                    <div class="md:col-span-4 flex justify-end">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2 rounded-lg shadow-sm transition text-sm flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Registrar Movimiento
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- HISTORIAL DE PAGOS -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900">Historial de Transacciones</h3>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-xs uppercase font-semibold border-b border-gray-200">
+                                <th class="py-3 px-6">ID</th>
+                                <th class="py-3 px-6">Concepto</th>
+                                <th class="py-3 px-6">Monto</th>
+                                <th class="py-3 px-6">Fecha</th>
+                                <th class="py-3 px-6">Estado</th>
+                                <th class="py-3 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 text-sm">
+                            {% for p in pagos %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6 font-medium text-gray-500">#{{ p.id }}</td>
+                                <td class="py-4 px-6 font-bold text-gray-900">{{ p.concepto }}</td>
+                                <td class="py-4 px-6 text-gray-700 font-semibold">${{ "%.2f"|format(p.monto) }}</td>
+                                <td class="py-4 px-6 text-gray-500">{{ p.fecha }}</td>
+                                <td class="py-4 px-6">
+                                    {% if p.estado == 'Pagado' %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Pagado
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Pendiente / Mora
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    <form action="/pago/{{ p.id }}/eliminar/{{ estudiante.id }}" method="POST" onsubmit="return confirm('¿Eliminar este registro de pago?');" class="inline">
+                                        <button type="submit" title="Eliminar registro" class="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition border border-rose-200 bg-rose-50/40">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-gray-400">
+                                    No hay registros de pagos para este estudiante.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

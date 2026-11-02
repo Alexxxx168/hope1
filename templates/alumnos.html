@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumnos y Fichas - Control Escolar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- BARRA LATERAL -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="p-2 bg-emerald-600 rounded-lg">
+                    <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wide">Colegio App</h1>
+            </div>
+<nav class="space-y-2">
+    <!-- El Dashboard lo ven ambos -->
+    <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <!-- EXCLUSIVO PARA ADMINISTRADOR: Alumnos y Fichas -->
+    {% if rol == 'admin' %}
+    <a href="/alumnos" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span>Alumnos y Fichas</span>
+    </a>
+    {% endif %}
+
+    <!-- Calificaciones (Notas): Lo ven ambos, y aquí estamos parados -->
+    <a href="/calificaciones" class="flex items-center gap-3 px-4 py-3 bg-emerald-600 rounded-lg text-white font-medium shadow-sm transition">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+        <span>Calificaciones (Notas)</span>
+    </a>
+    
+    <!-- Sección exclusiva de Administración -->
+    {% if rol == 'admin' %}
+    <div class="pt-4 mt-4 border-t border-slate-800 space-y-2">
+        <p class="px-4 text-xs font-semibold uppercase text-slate-500 tracking-wider">Administración</p>
+        <a href="/usuarios" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition">
+            <i data-lucide="user-cog" class="w-5 h-5 text-emerald-400"></i>
+            <span>Gestión de Docentes</span>
+        </a>
+    </div>
+    {% endif %}
+</nav>
+
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-emerald-600/30 flex items-center justify-center font-bold text-emerald-400 uppercase">
+                    {{ session.get('username')[0] }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold capitalize">{{ session.get('username') }}</p>
+                    <p class="text-xs text-emerald-400 uppercase font-bold tracking-wider">{{ rol }}</p>
+                </div>
+            </div>
+            <a href="/logout" title="Cerrar Sesión" class="p-2 text-slate-400 hover:text-rose-400 transition">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+            </a>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Directorio de Alumnos</h2>
+                <p class="text-sm text-gray-500">Gestión y fichas completas de estudiantes</p>
+            </div>
+            
+            {% if rol == 'admin' %}
+            <form method="GET" action="/alumnos" class="flex items-center gap-2">
+                <label class="text-sm font-medium text-gray-600">Filtrar Grado:</label>
+                <select name="grado" onchange="this.form.submit()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="todos">Todos los Grados</option>
+                    {% for g in grados %}
+                    <option value="{{ g }}" {% if grado_seleccionado == g %}selected{% endif %}>{{ g }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
+        </header>
+
+        <div class="p-8 space-y-6">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-xs uppercase font-semibold border-b border-gray-200">
+                                <th class="py-3 px-6">ID</th>
+                                <th class="py-3 px-6">Estudiante</th>
+                                <th class="py-3 px-6">Grado</th>
+                                <th class="py-3 px-6">Estado Pago</th>
+                                <th class="py-3 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 text-sm">
+                            {% for e in estudiantes %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="py-4 px-6 font-medium text-gray-500">#{{ e.id }}</td>
+                                <td class="py-4 px-6 font-bold text-gray-900">{{ e.nombre }}</td>
+                                <td class="py-4 px-6 text-gray-600 font-medium">{{ e.grado }}</td>
+                                <td class="py-4 px-6">
+                                    {% if e.estado_pago == 'Al día' %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Al día
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Pendiente
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <a href="/estudiante/{{ e.id }}/notas" class="px-3 py-1.5 hover:bg-emerald-50 text-emerald-700 rounded-lg transition flex items-center gap-1 text-xs font-medium border border-emerald-200 bg-emerald-50/40">
+                                            <i data-lucide="book-open" class="w-4 h-4"></i> Notas
+                                        </a>
+                                        {% if rol == 'admin' %}
+                                        <a href="/estudiante/{{ e.id }}/pagos" class="px-3 py-1.5 hover:bg-emerald-50 text-emerald-700 rounded-lg transition flex items-center gap-1 text-xs font-medium border border-emerald-200 bg-emerald-50/40">
+                                            <i data-lucide="dollar-sign" class="w-4 h-4"></i> Pagos
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-gray-400">No hay estudiantes registrados.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

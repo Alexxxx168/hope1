@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Notas - Control Escolar</title>
+    <!-- CDN de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos de Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 antialiased flex h-screen overflow-hidden">
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+
+        <!-- CABECERA -->
+        <header class="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center">
+            <div>
+                <a href="/dashboard" class="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 mb-2 transition">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Dashboard
+                </a>
+                <h2 class="text-2xl font-bold text-gray-900">Calificaciones del Alumno</h2>
+                <p class="text-sm text-gray-500">Alumno: <span class="font-semibold text-gray-800">{{ estudiante.nombre }}</span> | Grado: <span class="font-semibold text-emerald-600">{{ estudiante.grado }}</span></p>
+            </div>
+            
+            <!-- BOTÓN DE DESCARGAR BOLETA EN PDF -->
+            <div class="flex gap-3">
+                <a href="/estudiante/{{ estudiante.id }}/boleta-pdf" class="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm transition text-sm">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Descargar Boleta PDF</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-7xl mx-auto w-full space-y-6">
+
+            <!-- FORMULARIO GENERAL PARA EDITAR NOTAS -->
+            <form action="/estudiante/{{ estudiante.id }}/notas" method="POST">
+                
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
+                        <h3 class="text-lg font-bold text-gray-900">Desglose de Asignaturas y Bimestres</h3>
+                        <button type="submit" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg shadow-sm transition text-sm">
+                            <i data-lucide="save" class="w-4 h-4"></i> Guardar Cambios
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100/70 text-gray-600 text-xs uppercase font-semibold border-b border-gray-200">
+                                    <th class="py-3 px-6 w-1/3">Asignatura</th>
+                                    <th class="py-3 px-4 text-center">Bimestre 1</th>
+                                    <th class="py-3 px-4 text-center">Bimestre 2</th>
+                                    <th class="py-3 px-4 text-center">Bimestre 3</th>
+                                    <th class="py-3 px-4 text-center">Bimestre 4</th>
+                                    <th class="py-3 px-4 text-center">Promedio</th>
+                                    <th class="py-3 px-4 text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 text-sm">
+                                {% for nota in estudiante.notas %}
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <!-- Nombre de la Materia -->
+                                    <td class="py-4 px-6 font-medium text-gray-900">
+                                        {{ nota.materia }}
+                                    </td>
+                                    
+                                    <!-- Input Bimestre 1 -->
+                                    <td class="py-4 px-4 text-center">
+                                        <input type="number" step="0.1" min="0" max="100" name="b1_{{ nota.id }}" value="{{ nota.bimestre_1 }}" class="w-20 text-center px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white font-medium">
+                                    </td>
+                                    
+                                    <!-- Input Bimestre 2 -->
+                                    <td class="py-4 px-4 text-center">
+                                        <input type="number" step="0.1" min="0" max="100" name="b2_{{ nota.id }}" value="{{ nota.bimestre_2 }}" class="w-20 text-center px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white font-medium">
+                                    </td>
+                                    
+                                    <!-- Input Bimestre 3 -->
+                                    <td class="py-4 px-4 text-center">
+                                        <input type="number" step="0.1" min="0" max="100" name="b3_{{ nota.id }}" value="{{ nota.bimestre_3 }}" class="w-20 text-center px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white font-medium">
+                                    </td>
+                                    
+                                    <!-- Input Bimestre 4 -->
+                                    <td class="py-4 px-4 text-center">
+                                        <input type="number" step="0.1" min="0" max="100" name="b4_{{ nota.id }}" value="{{ nota.bimestre_4 }}" class="w-20 text-center px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white font-medium">
+                                    </td>
+                                    
+                                    <!-- Promedio Final Calculado -->
+                                    <td class="py-4 px-4 text-center font-bold text-gray-900">
+                                        {{ "%.1f"|format(nota.promedio_final) }}
+                                    </td>
+
+                                    <!-- Estado (Aprobado >= 60 / Reprobado < 60) -->
+                                    <td class="py-4 px-4 text-center">
+                                        {% if nota.promedio_final >= 60 %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                            Aprobado
+                                        </span>
+                                        {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">
+                                            Reprobado
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-8 text-gray-400">
+                                        No hay materias registradas para este estudiante.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- BOTÓN INFERIOR DE GUARDADO -->
+                    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50/50 flex justify-end">
+                        <button type="submit" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow-sm transition text-sm">
+                            <i data-lucide="save" class="w-4 h-4"></i> Guardar Calificaciones
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </main>
+
+    <!-- Inicializar iconos -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
