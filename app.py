@@ -75,6 +75,18 @@ def obtener_materias_por_grado(grado):
         return MATERIAS_PRIMARIA_BAJA
     return MATERIAS_PRIMARIA_ALTA
 
+# Lista oficial de grados del colegio
+GRADOS_OFICIALES = [
+    'Pre-kínder',
+    'Kínder',
+    'Preparatoria',
+    '1ro Primaria',
+    '2do Primaria',
+    '3ro Primaria',
+    '4to Primaria',
+    '5to Primaria',
+    '6to Primaria'
+]
 
 # -----------------------------------------------------------------------------
 # MODELOS

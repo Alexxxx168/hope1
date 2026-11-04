@@ -8,7 +8,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Iconos de Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" href="{{ url_for('static', filename='img/logochiquito.png') }}" type="image/png">
 </head>
+
+<!-- BANNER / HEADER SUPERIOR PARA MÓVIL (Solo visible en pantallas pequeñas) -->
+<div class="bg-slate-900 text-white p-4 flex justify-between items-center md:hidden border-b border-slate-800">
+    <div class="flex items-center gap-2">
+        <span class="font-bold text-base tracking-wide">Hope4 Guatemala</span>
+    </div>
+    <!-- Botón Hambuguesa -->
+    <button onclick="toggleSidebar()" class="p-2 rounded-lg bg-slate-800 text-slate-200 hover:text-white focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+    </button>
+</div>
 <body class="bg-gray-50 font-sans text-gray-800 antialiased flex h-screen overflow-hidden">
 
     <!-- BARRA LATERAL (SIDEBAR DINÁMICA) -->
@@ -257,6 +271,14 @@
     <!-- Inicializar iconos -->
     <script>
         lucide.createIcons();
+    </script>
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
     </script>
 </body>
 </html>
